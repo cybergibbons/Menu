@@ -61,7 +61,6 @@ void setup()
 {
     glcd.begin(0x19);    
     glcd.backLight(255);
-    //Serial.begin(9600);
 
     pinMode(ENTER_SWITCH, INPUT);
     pinMode(UP_SWITCH, INPUT);
@@ -105,14 +104,12 @@ void loop()
     if (enterSwitch.risingEdge())
         writeState = true;
 
-
     if (millis() - mediumUpdate > 500)
     {
         mediumUpdate = millis();
         flash = !flash;
     }
     
-
     if (millis() - fastUpdate > 200)
     {
         fastUpdate = millis();
@@ -135,6 +132,7 @@ void loop()
             if (state != EEPROM.read(0x00))
                 EEPROM.write(0x00, state);
 
+            writeState = false;
         }
     }
 
