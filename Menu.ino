@@ -3,6 +3,8 @@
 #include <avr/pgmspace.h>
 GLCD_ST7565 glcd;
 
+#include <EEPROM.h>
+
 
 
 #include "font_metric01.h"
@@ -50,6 +52,8 @@ Bounce enterSwitch = Bounce(ENTER_SWITCH, 5);
 Bounce upSwitch = Bounce(UP_SWITCH,5);
 Bounce downSwitch = Bounce(DOWN_SWITCH,5);
 
+static byte state = 0;
+
 //--------------------------------------------------------------------------------------------
 // Setup
 //--------------------------------------------------------------------------------------------
@@ -62,6 +66,8 @@ void setup()
     pinMode(ENTER_SWITCH, INPUT);
     pinMode(UP_SWITCH, INPUT);
     pinMode(DOWN_SWITCH, INPUT);
+
+    state = EEPROM.read(0x00);
 }
 
 void displayString(byte x, byte y, const char *string, bool invert)
@@ -81,9 +87,10 @@ void displayString_P(byte x, byte y, PGM_P string, bool invert)
 void loop()
 {
     static byte flash = 0;
-    static byte state = 0;
+    
     static long mediumUpdate = 0;
     static long fastUpdate = 0;
+    static bool writeState = false;
 
     enterSwitch.update();
     upSwitch.update();
@@ -94,6 +101,10 @@ void loop()
 
     if (downSwitch.risingEdge())
         state--;
+
+    if (enterSwitch.risingEdge())
+        writeState = true;
+
 
     if (millis() - mediumUpdate > 500)
     {
@@ -118,6 +129,13 @@ void loop()
         }
 
         glcd.refresh();
+
+        if (writeState)
+        {
+            if (state != EEPROM.read(0x00))
+                EEPROM.write(0x00, state);
+
+        }
     }
 
 }
